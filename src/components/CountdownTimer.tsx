@@ -1,6 +1,6 @@
-
 import React, { useEffect, useState } from "react";
 import { getEventSettings } from "@/utils/eventSettings";
+import { Clock } from "lucide-react";
 
 interface TimeLeft {
   days: number;
@@ -9,28 +9,36 @@ interface TimeLeft {
   seconds: number;
 }
 
-export const CountdownTimer = () => {
+const TimeUnit: React.FC<{ value: number; label: string; delay: number }> = ({ value, label, delay }) => (
+  <div 
+    className="flex flex-col items-center animate-fade-in" 
+    style={{ animationDelay: `${delay}ms` }}
+  >
+    <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-3 md:px-6 md:py-4 min-w-[70px] md:min-w-[100px] shadow-xl">
+      <span className="block text-3xl md:text-5xl lg:text-6xl font-bold text-white tabular-nums">
+        {value.toString().padStart(2, "0")}
+      </span>
+    </div>
+    <span className="text-[10px] md:text-xs font-semibold uppercase tracking-widest text-white/70 mt-2">
+      {label}
+    </span>
+  </div>
+);
+
+export const CountdownTimer: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0
+    days: 0, hours: 0, minutes: 0, seconds: 0
   });
   const [settings, setSettings] = useState(getEventSettings());
   const [isVisible, setIsVisible] = useState(true);
 
-  // Get event date from settings or use a default
-  const calculateTimeLeft = () => {
-    // Parse the event date string to get the date
+  const calculateTimeLeft = (): TimeLeft => {
     const eventDateParts = settings.eventDate?.split(" ")[0]?.split("/") || [];
-    
     let eventDate: Date;
     
     if (eventDateParts.length === 3) {
-      // Convert DD/MM/YYYY to a Date object
       eventDate = new Date(`${eventDateParts[2]}-${eventDateParts[1]}-${eventDateParts[0]}T00:00:00`);
     } else {
-      // Default to a future date if eventDate parsing fails
       eventDate = new Date();
       eventDate.setFullYear(eventDate.getFullYear() + 1);
     }
@@ -45,13 +53,7 @@ export const CountdownTimer = () => {
         seconds: Math.floor((difference / 1000) % 60)
       };
     }
-    
-    return {
-      days: 0,
-      hours: 0,
-      minutes: 0,
-      seconds: 0
-    };
+    return { days: 0, hours: 0, minutes: 0, seconds: 0 };
   };
 
   useEffect(() => {
@@ -59,31 +61,25 @@ export const CountdownTimer = () => {
       setTimeLeft(calculateTimeLeft());
     }, 1000);
 
-    // Set up event listener for localStorage changes
-    const handleStorageChange = () => {
-      const updatedSettings = getEventSettings();
-      setSettings(updatedSettings);
-      
-      // Check if countdown should be visible
-      if (updatedSettings.countdownVisible !== undefined) {
-        setIsVisible(updatedSettings.countdownVisible);
-      }
-    };
-    
-    // Initial check for visibility
     const initialSettings = getEventSettings();
     if (initialSettings.countdownVisible !== undefined) {
       setIsVisible(initialSettings.countdownVisible);
     }
-    
+
+    const handleStorageChange = () => {
+      const updatedSettings = getEventSettings();
+      setSettings(updatedSettings);
+      if (updatedSettings.countdownVisible !== undefined) {
+        setIsVisible(updatedSettings.countdownVisible);
+      }
+    };
+
     window.addEventListener('storage', handleStorageChange);
-    
-    // Also check periodically for changes in the same tab
+
     const settingsCheck = setInterval(() => {
       const currentSettings = getEventSettings();
       if (JSON.stringify(currentSettings) !== JSON.stringify(settings)) {
         setSettings(currentSettings);
-        
         if (currentSettings.countdownVisible !== undefined) {
           setIsVisible(currentSettings.countdownVisible);
         }
@@ -97,40 +93,34 @@ export const CountdownTimer = () => {
     };
   }, []);
 
-  const padWithZero = (num: number): string => {
-    return num < 10 ? `0${num}` : `${num}`;
-  };
+  if (isVisible === false || !settings.eventDate) return null;
 
-  // Apply the countdown colors from settings
-  const backgroundColor = settings.countdownBackgroundColor || settings.secondaryColor || "#F7DE45";
-  const textColor = settings.countdownTextColor || settings.primaryColor || "#12644F";
-
-  // If countdown is set to be hidden, return null
-  if (isVisible === false) {
-    return null;
-  }
+  const backgroundColor = settings.countdownBackgroundColor || "hsl(262 83% 58%)";
 
   return (
-    <div className="py-8 w-full" style={{ backgroundColor }}>
-      <div className="container mx-auto px-4">
-        <div className="flex justify-center">
-          <div className="grid grid-cols-4 gap-4 text-center">
-            <div className="flex flex-col items-center">
-              <span className="text-5xl md:text-7xl font-bold" style={{ color: textColor }}>{timeLeft.days}</span>
-              <span className="uppercase font-bold" style={{ color: textColor }}>Days</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="text-5xl md:text-7xl font-bold" style={{ color: textColor }}>{padWithZero(timeLeft.hours)}</span>
-              <span className="uppercase font-bold" style={{ color: textColor }}>Hours</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="text-5xl md:text-7xl font-bold" style={{ color: textColor }}>{padWithZero(timeLeft.minutes)}</span>
-              <span className="uppercase font-bold" style={{ color: textColor }}>Minutes</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="text-5xl md:text-7xl font-bold" style={{ color: textColor }}>{padWithZero(timeLeft.seconds)}</span>
-              <span className="uppercase font-bold" style={{ color: textColor }}>Seconds</span>
-            </div>
+    <div className="relative py-12 md:py-16 overflow-hidden" style={{ backgroundColor }}>
+      {/* Decorative elements */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-black/10" />
+      <div className="absolute top-0 left-1/3 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 right-1/4 w-48 h-48 bg-white/5 rounded-full blur-3xl" />
+      
+      <div className="relative container mx-auto px-4 sm:px-6">
+        <div className="text-center">
+          {/* Label */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 mb-6 animate-fade-in">
+            <Clock className="h-4 w-4 text-white/80" />
+            <span className="text-sm font-medium text-white/80">L'événement commence dans</span>
+          </div>
+
+          {/* Countdown Units */}
+          <div className="flex justify-center gap-3 md:gap-5">
+            <TimeUnit value={timeLeft.days} label="Jours" delay={0} />
+            <span className="text-3xl md:text-5xl font-bold text-white/40 self-start mt-3 md:mt-4 hidden sm:block">:</span>
+            <TimeUnit value={timeLeft.hours} label="Heures" delay={150} />
+            <span className="text-3xl md:text-5xl font-bold text-white/40 self-start mt-3 md:mt-4 hidden sm:block">:</span>
+            <TimeUnit value={timeLeft.minutes} label="Minutes" delay={300} />
+            <span className="text-3xl md:text-5xl font-bold text-white/40 self-start mt-3 md:mt-4 hidden sm:block">:</span>
+            <TimeUnit value={timeLeft.seconds} label="Secondes" delay={450} />
           </div>
         </div>
       </div>
