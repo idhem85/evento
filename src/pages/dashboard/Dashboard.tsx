@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
-import { LogOut, Scan, LayoutDashboard, Users, FileText, Image, Settings, Palette, Clock, Megaphone, BarChart3, ChevronRight } from "lucide-react";
+import { LogOut, Scan, LayoutDashboard, Users, FileText, Image, Settings, Palette, Clock, Megaphone, BarChart3, ChevronRight, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +12,7 @@ import {
   SidebarGroup, SidebarGroupLabel
 } from "@/components/ui/sidebar";
 
+import OverviewTab from "./tabs/OverviewTab";
 import ParticipantsTab from "./tabs/ParticipantsTab";
 import ContentTab from "./tabs/ContentTab";
 import AdminsTab from "./tabs/AdminsTab";
@@ -23,6 +24,7 @@ import EventCountdownTab from "./tabs/EventCountdownTab";
 import BannerTab from "./tabs/BannerTab";
 
 const tabs = [
+  { id: "overview", label: "Aperçu", icon: Home, desc: "Vue d'ensemble et KPIs" },
   { id: "participants", label: "Participants", icon: Users, desc: "Gérer les inscrits" },
   { id: "documents", label: "Documents", icon: FileText, desc: "Fichiers et ressources" },
   { id: "media", label: "Médiathèque", icon: Image, desc: "Photos et vidéos" },
@@ -39,7 +41,7 @@ const Dashboard = () => {
   const { isAuthenticated, logout } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [settings, setSettings] = useState(getEventSettings());
-  const [activeTab, setActiveTab] = useState("participants");
+  const [activeTab, setActiveTab] = useState("overview");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
@@ -62,6 +64,7 @@ const Dashboard = () => {
 
   const renderTabContent = () => {
     const tabMap: Record<string, React.ReactNode> = {
+      overview: <OverviewTab />,
       participants: <ParticipantsTab />,
       documents: <DocumentsTab />,
       media: <MediaTab />,
@@ -72,7 +75,7 @@ const Dashboard = () => {
       branding: <BrandingTab initialSettings={settings} />,
       settings: <SettingsTab />,
     };
-    return tabMap[activeTab] || <ParticipantsTab />;
+    return tabMap[activeTab] || <OverviewTab />;
   };
 
   return (
