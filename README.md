@@ -80,7 +80,6 @@ Un fichier `public/_redirects` est déjà configuré pour le routage côté clie
 | **qrcode.react** | Génération de QR codes |
 | **react-router-dom** | Routage SPA |
 | **react-hook-form + Zod** | Formulaires typés et validation |
-| **Framer Motion** | Animations fluides |
 | **recharts** | Graphiques du dashboard |
 | **Cloudflare Pages** | Hébergement & déploiement |
 
